@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Office Snack Budget 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f8f7f4; --surface: #ffffff; --surface2: #f2f0ec;
+  --border: #e4e0d8; --border2: #ccc8be;
+  --text: #1a1916; --text2: #6b6760; --text3: #9e9a94;
+  --green: #2a7d52; --green-bg: #e8f5ee;
+  --amber: #a05c0a; --amber-bg: #fdf0dc;
+  --red: #c0392b; --red-bg: #fdecea;
+  --blue: #1d5fa5; --blue-bg: #e8f0fc;
+  --accent: #2a7d52; --radius: 10px; --radius-sm: 6px;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.page-wrap { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+.header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
+.header-left h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
+.header-left p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+.header-badge { font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 99px; }
+
+.month-nav { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.5rem; display: flex; }
+.month-scroll { display: flex; overflow-x: auto; scrollbar-width: none; flex: 1; }
+.month-scroll::-webkit-scrollbar { display: none; }
+.month-btn { background: none; border: none; border-right: 1px solid var(--border); padding: 9px 0 7px; font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; color: var(--text2); cursor: pointer; white-space: nowrap; transition: background 0.12s, color 0.12s; flex: 1; min-width: 56px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.month-btn:last-child { border-right: none; }
+.month-btn:hover { background: var(--surface2); color: var(--text); }
+.month-btn.active { background: var(--text); color: #fff; }
+.month-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: 0; }
+.month-btn.has-data .month-dot { opacity: 1; }
+.month-btn.active .month-dot { background: #9effd0; }
+
+.tab-bar { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.75rem; }
+.tab-btn { background: none; border: none; border-bottom: 2px solid transparent; padding: 10px 16px; font-size: 14px; font-weight: 500; font-family: 'DM Sans', sans-serif; color: var(--text2); cursor: pointer; margin-bottom: -1px; transition: color 0.15s, border-color 0.15s; display: flex; align-items: center; gap: 6px; }
+.tab-btn.active { color: var(--text); border-bottom-color: var(--text); }
+.tab-btn:hover:not(.active) { color: var(--text); }
+.tab-pane { display: none; } .tab-pane.active { display: block; }
+.tab-badge { background: #e84b3a; color: #fff; font-size: 11px; padding: 1px 7px; border-radius: 99px; display: none; }
+.tab-badge.show { display: inline-block; }
+
+.metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+.metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; }
+.metric-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); margin-bottom: 8px; }
+.metric-value { font-size: 26px; font-weight: 600; font-family: 'DM Mono', monospace; letter-spacing: -0.5px; }
+.metric-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+.progress-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+.progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.progress-header span { font-size: 13px; font-weight: 500; color: var(--text2); }
+.progress-track { background: var(--surface2); border-radius: 99px; height: 10px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 1rem; }
+.chart-area { position: relative; height: 180px; }
+.cat-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.cat-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+.cat-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+.annual-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.5rem; }
+.annual-chart-area { position: relative; height: 200px; }
+
+.table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.25rem; }
+.table-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+.table-header-title { font-size: 13px; font-weight: 600; }
+.table-header-count { font-size: 12px; color: var(--text3); }
+table { width: 100%; border-collapse: collapse; }
+th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); text-align: left; padding: 9px 14px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+td { font-size: 13px; padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafaf8; }
+
+.add-row { display: flex; gap: 8px; align-items: center; padding: 10px 14px; background: var(--surface2); border-top: 1px solid var(--border); flex-wrap: wrap; }
+.add-row input, .add-row select { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 7px 10px; border: 1px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); outline: none; }
+.add-row input:focus, .add-row select:focus { border-color: var(--accent); }
+.add-row .inp-name { flex: 2; min-width: 120px; }
+.add-row .inp-cost { width: 90px; }
+.add-row .inp-date { width: 145px; }
+.add-row select { width: 120px; }
+.add-btn { background: var(--text); color: #fff; border: none; border-radius: var(--radius-sm); padding: 7px 14px; font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
+.add-btn:hover { opacity: 0.82; }
+
+.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 99px; }
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-amber { background: var(--amber-bg); color: var(--amber); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.del-btn { background: none; border: none; cursor: pointer; color: var(--text3); padding: 4px 6px; border-radius: 4px; font-size: 14px; transition: background 0.12s, color 0.12s; }
+.del-btn:hover { color: var(--red); background: var(--red-bg); }
+
+.req-form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); }
+.form-input { font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 9px 12px; border: 1px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); outline: none; transition: border-color 0.15s; }
+.form-input:focus { border-color: var(--accent); }
+textarea.form-input { resize: vertical; min-height: 80px; }
+.submit-btn { background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 22px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+.submit-btn:hover { opacity: 0.88; }
+.reqs-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.reqs-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+.reqs-header-title { font-size: 13px; font-weight: 600; }
+.req-filter { font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 5px 10px; border: 1px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); outline: none; }
+.req-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 14px 1.25rem; border-bottom: 1px solid var(--border); }
+.req-item:last-child { border-bottom: none; }
+.req-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.req-meta { font-size: 12px; color: var(--text2); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.req-reason { font-size: 13px; color: var(--text2); font-style: italic; margin-top: 4px; }
+.req-link { font-size: 12px; color: var(--blue); text-decoration: none; margin-top: 4px; display: inline-block; }
+.req-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.action-btn { background: none; border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 5px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; font-weight: 500; transition: all 0.12s; }
+.action-btn.approve { color: var(--green); } .action-btn.approve:hover { background: var(--green-bg); border-color: var(--green); }
+.action-btn.decline { color: var(--red); } .action-btn.decline:hover { background: var(--red-bg); border-color: var(--red); }
+.empty-state { padding: 2.5rem; text-align: center; color: var(--text3); font-size: 13px; }
+
+.upload-zone { border: 2px dashed var(--border2); border-radius: var(--radius); padding: 2.5rem; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; margin-bottom: 1.5rem; background: var(--surface); }
+.upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: var(--green-bg); }
+.upload-icon { font-size: 36px; margin-bottom: 12px; }
+.upload-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.upload-sub { font-size: 13px; color: var(--text2); margin-bottom: 16px; line-height: 1.6; }
+.upload-filebtn { background: var(--text); color: #fff; border: none; border-radius: var(--radius-sm); padding: 9px 20px; font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+.upload-filebtn:hover { opacity: 0.82; }
+.receipts-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
+.receipts-toolbar label { font-size: 13px; color: var(--text2); font-weight: 500; }
+.r-filter-select { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 6px 10px; border: 1px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); outline: none; }
+.receipt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+.receipt-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; position: relative; }
+.receipt-thumb { width: 100%; height: 140px; object-fit: cover; display: block; cursor: zoom-in; }
+.receipt-thumb-placeholder { width: 100%; height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--surface2); gap: 8px; }
+.receipt-thumb-placeholder span { font-size: 32px; }
+.receipt-thumb-placeholder small { font-size: 11px; color: var(--text3); }
+.receipt-info { padding: 10px 12px; }
+.receipt-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.receipt-meta { font-size: 11px; color: var(--text3); display: flex; justify-content: space-between; align-items: center; }
+.receipt-month-tag { font-size: 10px; background: var(--blue-bg); color: var(--blue); padding: 2px 6px; border-radius: 99px; font-weight: 500; }
+.receipt-del { position: absolute; top: 7px; right: 7px; background: rgba(0,0,0,0.55); color: #fff; border: none; border-radius: 50%; width: 26px; height: 26px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; }
+.receipt-card:hover .receipt-del { opacity: 1; }
+
+.lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; }
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 90vw; max-height: 88vh; border-radius: var(--radius); }
+.lightbox-close { position: fixed; top: 20px; right: 24px; background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 9999; font-family: 'DM Sans', sans-serif; }
+.toast.show { opacity: 1; }
+
+@media (max-width: 640px) {
+  .metric-grid { grid-template-columns: 1fr 1fr; }
+  .charts-row { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-group.full { grid-column: 1; }
+  .receipt-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="header">
+    <div class="header-left">
+      <h1>🧁 Office Snack Budget</h1>
+      <p>2026 &mdash; Monthly budget: $2,000</p>
+    </div>
+    <span class="header-badge" id="header-badge">$0 remaining</span>
+  </div>
+
+  <!-- Month selector -->
+  <div class="month-nav">
+    <div class="month-scroll" id="month-scroll"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('budget',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Budget
+    </button>
+    <button class="tab-btn" onclick="switchTab('annual',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Annual view
+    </button>
+    <button class="tab-btn" onclick="switchTab('requests',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Requests
+      <span class="tab-badge" id="req-badge">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('receipts',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Receipts
+      <span class="tab-badge" id="rec-badge">0</span>
+    </button>
+  </div>
+
+  <!-- BUDGET TAB -->
+  <div id="tab-budget" class="tab-pane active">
+    <div class="metric-grid" id="metrics"></div>
+    <div class="progress-wrap">
+      <div class="progress-header">
+        <span id="prog-month-label">Monthly spend progress</span>
+        <span id="prog-text" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--text)">$0 / $2,000</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-card">
+        <p class="card-title">Spend by category</p>
+        <div class="chart-area"><canvas id="catChart" role="img" aria-label="Category donut chart"></canvas></div>
+        <div class="cat-legend" id="cat-legend"></div>
+      </div>
+      <div class="chart-card">
+        <p class="card-title">Weekly spend</p>
+        <div class="chart-area"><canvas id="weekChart" role="img" aria-label="Weekly spend bar chart"></canvas></div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-header-title" id="purchases-title">Purchases this month</span>
+        <span class="table-header-count" id="item-count">0 items</span>
+      </div>
+      <table><thead><tr><th>Item</th><th>Category</th><th>Cost</th><th>Date</th><th></th></tr></thead>
+      <tbody id="items-body"></tbody></table>
+      <div class="add-row">
+        <input class="inp-name" id="new-item" type="text" placeholder="Item name" />
+        <select id="new-cat"><option>Drinks</option><option>Fruit &amp; Veg</option><option>Snacks</option><option>Sweets</option><option>Other</option></select>
+        <input class="inp-cost" id="new-cost" type="number" placeholder="$0.00" min="0" step="0.01" />
+        <input class="inp-date" id="new-date" type="date" />
+        <button class="add-btn" onclick="addItem()">+ Add item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANNUAL TAB -->
+  <div id="tab-annual" class="tab-pane">
+    <div class="metric-grid" id="annual-metrics"></div>
+    <div class="annual-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+        <p class="card-title" style="margin:0">Monthly spend vs. $2,000 budget — 2026</p>
+        <div style="display:flex;align-items:center;gap:14px;font-size:12px;color:var(--text2)">
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:10px;background:#1d5fa522;border:1.5px solid #1d5fa5;border-radius:2px;display:inline-block"></span>Actual spend</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;border-top:2px dashed #c0392b;display:inline-block"></span>$2k budget</span>
+        </div>
+      </div>
+      <div class="annual-chart-area"><canvas id="annualChart" role="img" aria-label="Annual spend vs budget chart"></canvas></div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-card">
+        <p class="card-title">Category breakdown — full year</p>
+        <div class="chart-area"><canvas id="annualCatChart" role="img" aria-label="Full year category donut chart"></canvas></div>
+        <div class="cat-legend" id="annual-cat-legend"></div>
+      </div>
+      <div class="chart-card" style="overflow-y:auto;max-height:380px">
+        <p class="card-title">Month-by-month pace</p>
+        <div id="ytd-info"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REQUESTS TAB -->
+  <div id="tab-requests" class="tab-pane">
+    <div class="req-form-card">
+      <p class="card-title" style="margin-bottom:1.25rem">Submit a snack request</p>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Snack / item name *</label><input class="form-input" type="text" id="r-name" placeholder="e.g. Sparkling water variety pack" /></div>
+        <div class="form-group"><label class="form-label">Category</label><select class="form-input" id="r-cat"><option>Drinks</option><option>Fruit &amp; Veg</option><option>Snacks</option><option>Sweets</option><option>Other</option></select></div>
+        <div class="form-group"><label class="form-label">Estimated cost ($)</label><input class="form-input" type="number" id="r-cost" placeholder="0.00" min="0" step="0.01" /></div>
+        <div class="form-group"><label class="form-label">Your name</label><input class="form-input" type="text" id="r-person" placeholder="First name" /></div>
+        <div class="form-group full"><label class="form-label">Why should we add this?</label><textarea class="form-input" id="r-reason" placeholder="Tell us why the team would love this..."></textarea></div>
+        <div class="form-group full"><label class="form-label">Link to buy (optional)</label><input class="form-input" type="text" id="r-link" placeholder="https://..." /></div>
+      </div>
+      <button class="submit-btn" onclick="submitRequest()">Submit request</button>
+    </div>
+    <div class="reqs-section">
+      <div class="reqs-header">
+        <span class="reqs-header-title">Submitted requests</span>
+        <select class="req-filter" id="req-filter" onchange="renderRequests()">
+          <option value="all">All statuses</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="declined">Declined</option>
+        </select>
+      </div>
+      <div id="requests-list"></div>
+    </div>
+  </div>
+
+  <!-- RECEIPTS TAB -->
+  <div id="tab-receipts" class="tab-pane">
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <div class="upload-icon">🧾</div>
+      <p class="upload-title">Upload receipts</p>
+      <p class="upload-sub">Drag &amp; drop images here, or click to browse<br><span style="font-size:12px;color:var(--text3)">JPG, PNG, GIF, WebP supported &mdash; they'll be tagged to the selected month</span></p>
+      <button class="upload-filebtn" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Choose files</button>
+    </div>
+    <input type="file" id="file-input" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)" />
+
+    <div class="receipts-toolbar">
+      <label>Filter by month:</label>
+      <select class="r-filter-select" id="rec-month-filter" onchange="renderReceipts()">
+        <option value="all">All months</option>
+      </select>
+      <span style="margin-left:auto;font-size:12px;color:var(--text3)" id="rec-count-label"></span>
+    </div>
+
+    <div class="receipt-grid" id="receipt-grid"></div>
+    <div id="receipt-empty" class="empty-state">No receipts uploaded yet. Drag and drop images above to get started.</div>
+  </div>
+
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">&#x2715;</button>
+  <img id="lightbox-img" src="" alt="Receipt" onclick="event.stopPropagation()" />
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const BUDGET = 2000;
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const CAT_COLORS = { 'Drinks':'#1d5fa5','Fruit & Veg':'#2a7d52','Snacks':'#a05c0a','Sweets':'#b03060','Other':'#6b6760' };
+const TODAY = new Date().toISOString().slice(0,10);
+const CUR_MONTH = new Date().getMonth();
+
+let allItems = {};
+let requests = [
+  { id:1, name:'Oat milk (12 cartons)', category:'Drinks', cost:36, person:'Jamie', reason:'Would go great with the coffee station!', link:'', status:'pending', date:'2026-05-10' },
+  { id:2, name:'Dark chocolate almonds', category:'Sweets', cost:22, person:'Priya', reason:'Healthy-ish afternoon snack option', link:'https://amazon.com', status:'pending', date:'2026-05-13' },
+];
+let receipts = [];
+let nextItemId = 20, nextReqId = 3, nextRecId = 1;
+let activeMonth = CUR_MONTH;
+let catChart, weekChart, annualChart, annualCatChart;
+
+allItems[4] = [
+  { id:1, name:'LaCroix 24-pack', category:'Drinks', cost:18.99, date:'2026-05-02' },
+  { id:2, name:'Mixed fruit bowl', category:'Fruit & Veg', cost:34.50, date:'2026-05-05' },
+  { id:3, name:'Kind bars (30ct)', category:'Snacks', cost:42.00, date:'2026-05-07' },
+  { id:4, name:'Cold brew coffee', category:'Drinks', cost:24.00, date:'2026-05-09' },
+  { id:5, name:'Veggie chips', category:'Snacks', cost:16.50, date:'2026-05-12' },
+  { id:6, name:'Gummy bears', category:'Sweets', cost:9.99, date:'2026-05-14' },
+  { id:7, name:'Kombucha 12-pack', category:'Drinks', cost:29.88, date:'2026-05-16' },
+];
+allItems[3] = [
+  { id:8, name:'Sparkling water (24pk)', category:'Drinks', cost:22.50, date:'2026-04-03' },
+  { id:9, name:'Trail mix bulk bag', category:'Snacks', cost:38.00, date:'2026-04-08' },
+  { id:10, name:'Banana bunches', category:'Fruit & Veg', cost:12.00, date:'2026-04-10' },
+  { id:11, name:'Protein bars (20ct)', category:'Snacks', cost:44.99, date:'2026-04-15' },
+  { id:12, name:'Iced tea variety', category:'Drinks', cost:18.75, date:'2026-04-20' },
+];
+allItems[2] = [
+  { id:13, name:'Orange juice (6pk)', category:'Drinks', cost:19.99, date:'2026-03-05' },
+  { id:14, name:'Granola bars (24ct)', category:'Snacks', cost:29.50, date:'2026-03-12' },
+  { id:15, name:'Mixed nuts (3lb)', category:'Snacks', cost:36.00, date:'2026-03-18' },
+  { id:16, name:'Seasonal fruit box', category:'Fruit & Veg', cost:48.00, date:'2026-03-22' },
+];
+
+function getItems(m) { return allItems[m] || []; }
+function setItems(m, arr) { allItems[m] = arr; }
+function totalSpent(m) { return getItems(m).reduce((s,i) => s + i.cost, 0); }
+
+function buildMonthNav() {
+  const scroll = document.getElementById('month-scroll');
+  scroll.innerHTML = MONTH_SHORT.map((s,i) => {
+    const hasData = (allItems[i] || []).length > 0;
+    return `<button class="month-btn${i===activeMonth?' active':''}${hasData?' has-data':''}" onclick="setMonth(${i})">${s}<span class="month-dot"></span></button>`;
+  }).join('');
+}
+
+function setMonth(m) {
+  activeMonth = m;
+  buildMonthNav();
+  const mm = String(m+1).padStart(2,'0');
+  document.getElementById('new-date').value = `2026-${mm}-01`;
+  renderAll();
+  setTimeout(() => {
+    const btns = document.querySelectorAll('.month-btn');
+    if (btns[m]) btns[m].scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+  }, 50);
+}
+
+function renderMetrics() {
+  const spent = totalSpent(activeMonth);
+  const remaining = BUDGET - spent;
+  const pct = Math.min(100, (spent/BUDGET)*100);
+  const rc = remaining < 300 ? 'var(--red)' : remaining < 600 ? 'var(--amber)' : 'var(--green)';
+  document.getElementById('metrics').innerHTML = `
+    <div class="metric-card"><p class="metric-label">Total budget</p><p class="metric-value">$${BUDGET.toLocaleString()}</p><p class="metric-sub">${MONTHS[activeMonth]} 2026</p></div>
+    <div class="metric-card"><p class="metric-label">Spent so far</p><p class="metric-value">$${spent.toFixed(2)}</p><p class="metric-sub">${pct.toFixed(0)}% of budget used</p></div>
+    <div class="metric-card"><p class="metric-label">Remaining</p><p class="metric-value" style="color:${rc}">$${remaining.toFixed(2)}</p><p class="metric-sub">${(100-pct).toFixed(0)}% remaining</p></div>`;
+  document.getElementById('prog-text').textContent = `$${spent.toFixed(2)} / $${BUDGET.toLocaleString()}`;
+  document.getElementById('prog-month-label').textContent = `${MONTHS[activeMonth]} spend progress`;
+  document.getElementById('purchases-title').textContent = `Purchases — ${MONTHS[activeMonth]}`;
+  const fill = document.getElementById('prog-fill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct > 90 ? '#c0392b' : pct > 70 ? '#a05c0a' : '#2a7d52';
+  const hb = document.getElementById('header-badge');
+  hb.textContent = `$${remaining.toFixed(2)} remaining in ${MONTH_SHORT[activeMonth]}`;
+  hb.style.background = remaining < 300 ? 'var(--red-bg)' : remaining < 600 ? 'var(--amber-bg)' : 'var(--green-bg)';
+  hb.style.color = remaining < 300 ? 'var(--red)' : remaining < 600 ? 'var(--amber)' : 'var(--green)';
+}
+
+function renderItems() {
+  const items = getItems(activeMonth);
+  const tbody = document.getElementById('items-body');
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No purchases logged for this month. Add one below.</td></tr>';
+    document.getElementById('item-count').textContent = '0 items'; return;
+  }
+  const sorted = [...items].sort((a,b) => b.date.localeCompare(a.date));
+  tbody.innerHTML = sorted.map(i => {
+    const col = CAT_COLORS[i.category]||'#888';
+    return `<tr><td style="font-weight:500">${i.name}</td><td><span class="badge" style="background:${col}18;color:${col}">${i.category}</span></td><td style="font-family:'DM Mono',monospace;font-size:13px">$${i.cost.toFixed(2)}</td><td style="color:var(--text2)">${i.date}</td><td><button class="del-btn" onclick="deleteItem(${i.id})" title="Remove">&#x2715;</button></td></tr>`;
+  }).join('');
+  document.getElementById('item-count').textContent = `${items.length} item${items.length!==1?'s':''}`;
+}
+
+function addItem() {
+  const name = document.getElementById('new-item').value.trim();
+  const cat = document.getElementById('new-cat').value;
+  const cost = parseFloat(document.getElementById('new-cost').value);
+  const date = document.getElementById('new-date').value;
+  if (!name || isNaN(cost) || !date) { showToast('Please enter name, cost, and date.'); return; }
+  const arr = getItems(activeMonth);
+  arr.push({ id: nextItemId++, name, category: cat, cost, date });
+  setItems(activeMonth, arr);
+  document.getElementById('new-item').value = '';
+  document.getElementById('new-cost').value = '';
+  buildMonthNav(); renderAll(); showToast('Item added ✓');
+}
+
+function deleteItem(id) {
+  setItems(activeMonth, getItems(activeMonth).filter(i => i.id !== id));
+  buildMonthNav(); renderAll(); showToast('Item removed');
+}
+
+function renderCharts() {
+  const items = getItems(activeMonth);
+  const catTotals = {};
+  items.forEach(i => { catTotals[i.category] = (catTotals[i.category]||0) + i.cost; });
+  const cats = Object.keys(catTotals);
+  const vals = cats.map(c => Math.round(catTotals[c]*100)/100);
+  const colors = cats.map(c => CAT_COLORS[c]||'#888780');
+  if (catChart) catChart.destroy();
+  if (cats.length) {
+    catChart = new Chart(document.getElementById('catChart'), { type:'doughnut', data:{ labels:cats, datasets:[{ data:vals, backgroundColor:colors, borderWidth:0, hoverOffset:6 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => ` $${ctx.raw.toFixed(2)}` } } }, cutout:'62%' } });
+    document.getElementById('cat-legend').innerHTML = cats.map((c,i) => `<span class="cat-legend-item"><span class="cat-dot" style="background:${colors[i]}"></span>${c} <strong style="color:var(--text)">$${vals[i].toFixed(2)}</strong></span>`).join('');
+  } else {
+    document.getElementById('cat-legend').innerHTML = '<span style="font-size:12px;color:var(--text3)">No data for this month</span>';
+    const cv = document.getElementById('catChart'); const ctx = cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height);
+  }
+  const weekData = [0,0,0,0];
+  items.forEach(i => { const d = parseInt(i.date.split('-')[2]); const w = Math.min(3,Math.floor((d-1)/7)); weekData[w] += i.cost; });
+  if (weekChart) weekChart.destroy();
+  weekChart = new Chart(document.getElementById('weekChart'), { type:'bar', data:{ labels:['Week 1','Week 2','Week 3','Week 4'], datasets:[{ label:'Spend', data:weekData.map(v=>Math.round(v*100)/100), backgroundColor:'#1d5fa522', borderColor:'#1d5fa5', borderWidth:1.5, borderRadius:5 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>'$'+v, font:{ family:'DM Mono', size:11 } }, grid:{ color:'#e4e0d833' } }, x:{ ticks:{ font:{ family:'DM Sans', size:11 } }, grid:{ display:false } } } } });
+}
+
+function renderAnnual() {
+  const monthSpends = MONTHS.map((_,m) => Math.round(totalSpent(m)*100)/100);
+  const totalYear = monthSpends.reduce((a,b)=>a+b,0);
+  const monthsWithData = monthSpends.filter(v=>v>0).length;
+  const avgMonthly = monthsWithData ? totalYear/monthsWithData : 0;
+  const projected = monthsWithData ? avgMonthly*12 : 0;
+  const annualBudget = BUDGET*12;
+  const overUnder = projected - annualBudget;
+
+  document.getElementById('annual-metrics').innerHTML = `
+    <div class="metric-card"><p class="metric-label">Year-to-date spend</p><p class="metric-value">$${totalYear.toFixed(2)}</p><p class="metric-sub">${monthsWithData} month${monthsWithData!==1?'s':''} of data</p></div>
+    <div class="metric-card"><p class="metric-label">Avg monthly spend</p><p class="metric-value">$${avgMonthly.toFixed(2)}</p><p class="metric-sub">vs. $2,000 budget</p></div>
+    <div class="metric-card"><p class="metric-label">Projected annual</p><p class="metric-value" style="color:${projected>annualBudget?'var(--red)':'var(--green)'}">$${Math.round(projected).toLocaleString()}</p><p class="metric-sub">budget: $${annualBudget.toLocaleString()}</p></div>`;
+
+  if (annualChart) annualChart.destroy();
+  annualChart = new Chart(document.getElementById('annualChart'), {
+    type:'bar',
+    data:{ labels:MONTH_SHORT, datasets:[
+      { label:'Spent', data:monthSpends, backgroundColor:'#1d5fa522', borderColor:'#1d5fa5', borderWidth:1.5, borderRadius:4 },
+      { label:'Budget', data:Array(12).fill(BUDGET), type:'line', borderColor:'#c0392b', borderWidth:1.5, borderDash:[5,4], pointRadius:0, fill:false }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx=>` $${ctx.raw.toFixed?ctx.raw.toFixed(2):ctx.raw}` } } }, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>'$'+v, font:{ family:'DM Mono', size:11 } }, grid:{ color:'#e4e0d833' } }, x:{ ticks:{ font:{ family:'DM Sans', size:11 } }, grid:{ display:false } } } }
+  });
+
+  const allCatTotals = {};
+  Object.values(allItems).forEach(arr => arr.forEach(i => { allCatTotals[i.category] = (allCatTotals[i.category]||0)+i.cost; }));
+  const aCats = Object.keys(allCatTotals);
+  const aVals = aCats.map(c => Math.round(allCatTotals[c]*100)/100);
+  const aColors = aCats.map(c => CAT_COLORS[c]||'#888780');
+  if (annualCatChart) annualCatChart.destroy();
+  if (aCats.length) {
+    annualCatChart = new Chart(document.getElementById('annualCatChart'), { type:'doughnut', data:{ labels:aCats, datasets:[{ data:aVals, backgroundColor:aColors, borderWidth:0, hoverOffset:6 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx=>` $${ctx.raw.toFixed(2)}` } } }, cutout:'60%' } });
+    document.getElementById('annual-cat-legend').innerHTML = aCats.map((c,i) => `<span class="cat-legend-item"><span class="cat-dot" style="background:${aColors[i]}"></span>${c} <strong style="color:var(--text)">$${aVals[i].toFixed(2)}</strong></span>`).join('');
+  }
+
+  const ytd = document.getElementById('ytd-info');
+  const pct = totalYear/annualBudget*100;
+  ytd.innerHTML = `
+    <div style="margin-bottom:14px">
+      <p style="font-size:12px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Annual budget used</p>
+      <div style="background:var(--surface2);border-radius:99px;height:10px;overflow:hidden;margin-bottom:6px"><div style="height:100%;border-radius:99px;width:${Math.min(100,pct).toFixed(1)}%;background:${pct>100?'#c0392b':pct>75?'#a05c0a':'#2a7d52'}"></div></div>
+      <p style="font-size:13px;font-family:'DM Mono',monospace">${pct.toFixed(1)}% of $${annualBudget.toLocaleString()}</p>
+    </div>
+    <div style="display:grid;gap:8px">
+      ${monthSpends.map((s,i)=>{
+        if (!s) return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0"><span style="color:var(--text3)">${MONTH_SHORT[i]}</span><span style="color:var(--text3);font-style:italic">—</span></div>`;
+        const mp = Math.min(100,s/BUDGET*100);
+        const sc = s>BUDGET?'#c0392b':s>1500?'#a05c0a':'#2a7d52';
+        return `<div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:var(--text2)">${MONTH_SHORT[i]}</span><span style="font-family:'DM Mono',monospace;color:${sc}">$${s.toFixed(0)}</span></div><div style="background:var(--surface2);border-radius:99px;height:5px;overflow:hidden"><div style="height:100%;border-radius:99px;width:${mp.toFixed(1)}%;background:${sc}"></div></div></div>`;
+      }).join('')}
+    </div>
+    ${monthsWithData ? `<p style="font-size:12px;color:${overUnder>0?'var(--red)':'var(--green)'};margin-top:14px;font-weight:500">On pace to be ${overUnder>0?'over':'under'} budget by $${Math.abs(Math.round(overUnder)).toLocaleString()} this year</p>` : ''}`;
+}
+
+function renderRequests() {
+  const filter = document.getElementById('req-filter').value;
+  const filtered = requests.filter(r => filter==='all' || r.status===filter);
+  const pending = requests.filter(r=>r.status==='pending').length;
+  const badge = document.getElementById('req-badge');
+  pending > 0 ? (badge.textContent=pending, badge.classList.add('show')) : badge.classList.remove('show');
+  const list = document.getElementById('requests-list');
+  if (!filtered.length) { list.innerHTML = '<div class="empty-state">No requests here yet.</div>'; return; }
+  list.innerHTML = filtered.map(r => {
+    const col = CAT_COLORS[r.category]||'#888';
+    const sb = r.status==='approved' ? '<span class="badge badge-green">Approved</span>' : r.status==='declined' ? '<span class="badge badge-red">Declined</span>' : '<span class="badge badge-amber">Pending review</span>';
+    const actions = r.status==='pending' ? `<div class="req-actions"><button class="action-btn approve" onclick="updateReq(${r.id},'approved')">Approve</button><button class="action-btn decline" onclick="updateReq(${r.id},'declined')">Decline</button></div>` : `<div style="opacity:0.4;font-size:12px;color:var(--text2);padding-top:4px">${r.status==='approved'?'✓ Done':'✗ Done'}</div>`;
+    return `<div class="req-item"><div><p class="req-name">${r.name} ${sb}</p><p class="req-meta"><span style="background:${col}18;color:${col};padding:2px 7px;border-radius:99px;font-size:11px;font-weight:500">${r.category}</span>${r.cost?`<span style="font-family:'DM Mono',monospace">$${parseFloat(r.cost).toFixed(2)} est.</span>`:''}<span>by ${r.person||'Anonymous'}</span><span>${r.date}</span></p>${r.reason?`<p class="req-reason">&ldquo;${r.reason}&rdquo;</p>`:''} ${r.link?`<a class="req-link" href="${r.link}" target="_blank">View link &rarr;</a>`:''}</div>${actions}</div>`;
+  }).join('');
+}
+
+function updateReq(id, status) {
+  const r = requests.find(r=>r.id===id);
+  if (r) { r.status=status; renderRequests(); showToast(status==='approved'?'Request approved ✓':'Request declined'); }
+}
+
+function submitRequest() {
+  const name = document.getElementById('r-name').value.trim();
+  if (!name) { showToast('Please enter a snack name.'); return; }
+  requests.unshift({ id:nextReqId++, name, category:document.getElementById('r-cat').value, cost:document.getElementById('r-cost').value||0, person:document.getElementById('r-person').value.trim()||'Anonymous', reason:document.getElementById('r-reason').value.trim(), link:document.getElementById('r-link').value.trim(), status:'pending', date:TODAY });
+  ['r-name','r-cost','r-person','r-reason','r-link'].forEach(id => document.getElementById(id).value = '');
+  renderRequests(); showToast('Request submitted! 🎉');
+}
+
+function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
+function handleDragLeave() { document.getElementById('upload-zone').classList.remove('drag-over'); }
+function handleDrop(e) { e.preventDefault(); document.getElementById('upload-zone').classList.remove('drag-over'); handleFiles(e.dataTransfer.files); }
+
+function handleFiles(files) {
+  if (!files||!files.length) return;
+  let count = 0;
+  Array.from(files).forEach(file => {
+    if (!file.type.match(/image\/.*/i)) { showToast(`Skipped ${file.name} — images only`); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      receipts.push({ id:nextRecId++, name:file.name, dataUrl:e.target.result, type:file.type, month:activeMonth, date:TODAY, size:file.size });
+      count++;
+      updateReceiptBadge();
+      updateReceiptFilter();
+      renderReceipts();
+      if (count === Array.from(files).filter(f=>f.type.match(/image\/.*/i)).length) showToast(`${count} receipt${count>1?'s':''} uploaded ✓`);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function updateReceiptBadge() {
+  const badge = document.getElementById('rec-badge');
+  receipts.length > 0 ? (badge.textContent=receipts.length, badge.classList.add('show')) : badge.classList.remove('show');
+}
+
+function updateReceiptFilter() {
+  const sel = document.getElementById('rec-month-filter');
+  const months = [...new Set(receipts.map(r=>r.month))].sort((a,b)=>a-b);
+  const cur = sel.value;
+  sel.innerHTML = '<option value="all">All months</option>' + months.map(m=>`<option value="${m}"${String(m)===cur?'selected':''}>${MONTHS[m]}</option>`).join('');
+}
+
+function renderReceipts() {
+  const filter = document.getElementById('rec-month-filter').value;
+  const filtered = filter==='all' ? receipts : receipts.filter(r=>r.month===parseInt(filter));
+  const grid = document.getElementById('receipt-grid');
+  const empty = document.getElementById('receipt-empty');
+  document.getElementById('rec-count-label').textContent = filtered.length ? `${filtered.length} receipt${filtered.length!==1?'s':''}` : '';
+  if (!filtered.length) { grid.innerHTML=''; grid.style.display='none'; empty.style.display='block'; return; }
+  empty.style.display='none'; grid.style.display='grid';
+  grid.innerHTML = filtered.map(r => {
+    const sz = r.size < 1024*1024 ? `${(r.size/1024).toFixed(0)} KB` : `${(r.size/1024/1024).toFixed(1)} MB`;
+    return `<div class="receipt-card">
+      <img class="receipt-thumb" src="${r.dataUrl}" alt="${r.name}" onclick="openLightbox(${r.id})" />
+      <button class="receipt-del" onclick="deleteReceipt(${r.id})" title="Remove">&#x2715;</button>
+      <div class="receipt-info">
+        <p class="receipt-name" title="${r.name}">${r.name}</p>
+        <p class="receipt-meta"><span>${sz}</span><span class="receipt-month-tag">${MONTH_SHORT[r.month]}</span></p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteReceipt(id) { receipts=receipts.filter(r=>r.id!==id); updateReceiptBadge(); updateReceiptFilter(); renderReceipts(); showToast('Receipt removed'); }
+function openLightbox(id) { const r=receipts.find(r=>r.id===id); if(!r) return; document.getElementById('lightbox-img').src=r.dataUrl; document.getElementById('lightbox').classList.add('open'); }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLightbox(); });
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+  if (tab==='annual') renderAnnual();
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+function renderAll() { renderMetrics(); renderItems(); renderCharts(); }
+
+buildMonthNav();
+document.getElementById('new-date').value = `2026-${String(activeMonth+1).padStart(2,'0')}-01`;
+renderAll();
+renderRequests();
+renderReceipts();
+setTimeout(()=>{ const btns=document.querySelectorAll('.month-btn'); if(btns[activeMonth]) btns[activeMonth].scrollIntoView({block:'nearest',inline:'center'}); }, 100);
+</script>
+</body>
+</html>
